@@ -1,23 +1,25 @@
 # Interface: goBILDA
 
-**System:** metric · **Fastener:** M4 · **Grid:** 8 mm · Confidence: ✅ *(exact hole Ø 🔴)*
+**System:** metric · **Fastener:** M4 × 0.7 · **Grid:** 8 mm · Confidence: ✅ *(verified from STEP files)*
 
 ## Pattern
 
 | Feature | Value |
 |---------|-------|
-| Grid spacing | 8 mm |
-| Hole (design default) | 4.5 mm (M4 normal clearance) — label says "4 mm" |
-| Bearing hole | 14 mm |
-| Block mounting pattern | 32 × 32 mm (also 16 × 32); tapped grid 16 mm |
-| Shaft | 8 mm round or **REX** (proprietary) |
-| Bearing | 1611 flanged (8 × 14 × 5), 1600 non-flanged (8 × 22 × 7 = 608) |
+| Grid spacing | 8.0 mm |
+| **Native hole Ø** | **4.000 mm** — thread-forming fit for M4 (not a clearance hole) |
+| Hole Ø to bolt a **printed part onto** goBILDA | **4.5 mm** (M4 normal clearance) |
+| Bearing hole | 14.0 mm, every 24 mm (3 × grid); 4 surrounding holes clocked 45° |
+| Plate/channel widths | 32 / 43 / 48 / 96 mm (widths — **not** a bolt-circle footprint) |
+| Channels | U 48×48 · Low-Side 12×48 · Mini 12×32 mm |
+| Shaft | 6 mm D / 8 mm round; 8 mm & 12 mm REX |
+| Bearing | 1611 flanged (8×14×5), 1600 non-flanged (8×22×7 = 608) |
 
 Use pattern `gobilda_8mm_grid` from [hole-patterns.md](../hole-patterns.md).
 
 ## When designing a goBILDA-mating part
-- Grid holes on 8 mm centers, `#hole = 4.5`.
-- If it carries an 8 mm shaft, use the 14 mm bearing pocket (1611) or 22 mm (1600/608).
-- REX vs round matters — REX shafts need a REX-profile bore; don't assume round.
+- **Bolting onto goBILDA?** Use 4.5 mm clearance holes on 8 mm centers so the M4 passes through your part freely.
+- **Replicating a goBILDA structural member** (screws thread into your part)? Use 4.0 mm to match native, or a heat-set insert boss (M4 → 5.6 mm).
+- 8 mm shaft → 14 mm bearing pocket (1611) or 22 mm (1600/608). REX ≠ round — REX shafts need a REX-profile bore.
 
-🔴 **Verify before final:** true drilled hole Ø from goBILDA's STEP file; any goRAIL-specific spacing. Sources in [master-variables.md](../master-variables.md#1-vendor-grids).
+Sources & full detail in [master-variables.md](../master-variables.md#1-vendor-grids).

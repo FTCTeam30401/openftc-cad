@@ -28,14 +28,22 @@ The first pattern we standardize, because it's the cleanest and most widely used
 
 ```yaml
 name: gobilda_8mm_grid
-spacing: 8.0          # mm — from master-variables.yaml -> vendor_grids.gobilda.grid_spacing
-hole_diameter: 4.5    # mm — M4 NORMAL clearance (see note below)
+spacing: 8.0          # mm — master-variables.yaml -> vendor_grids.gobilda.grid_spacing
+hole_diameter: 4.5    # mm — DEFAULT for a printed part bolting ONTO goBILDA (see below)
 fastener: M4
 origin: hole-center   # measure the grid from a hole, not a corner
 ```
 
-**Why `hole_diameter: 4.5` and not "4 mm"?**
-goBILDA *labels* its holes "4 mm," but that's design-intent nomenclature. A real M4 fastener needs clearance — the ISO 273 **normal** clearance for M4 is **4.5 mm** (close 4.3 / loose 4.8). We use 4.5 as the sensible printable default and flag it: the true drilled Ø on goBILDA parts is 🔴 **unverified** pending a STEP-file pull. If mating parts fit loose, drop to 4.3.
+**The hole diameter depends on the part's role — this is the important bit.**
+
+goBILDA's own aluminum has **4.000 mm** holes (verified from their STEP files). That is *not* a loose clearance hole — it's a thread-forming fit, and goBILDA sells M4 thread-forming screws and taps to cut threads directly into it. So:
+
+| Your part's role | Hole Ø | Why |
+|------------------|--------|-----|
+| **Bolts *onto* goBILDA** (screw passes through your printed part) | **4.5 mm** (M4 normal clearance) | the M4 must pass through freely; 4.0 mm would bind |
+| **Replicates a goBILDA member** (screw threads *into* your part) | 4.0 mm, or a heat-set boss (5.6 mm for M4) | match native / give the insert material to grip |
+
+The default above is **4.5 mm** because the common case is a printed part bolting onto existing goBILDA structure. If two mating parts fit loose, drop to 4.3 (close); if tight, go 4.8 (loose).
 
 ### How to build it in Onshape (your first hands-on task)
 
@@ -50,8 +58,8 @@ This is exactly the "Variables + Sketches" skill from **Project 1** of the teach
 
 ## Patterns to add next
 
-- `rev_duo_16mm` — REV DUO Motion Pattern (M3, 16 mm pitch) — pending exact hole Ø from STEP.
-- `robits_halfinch` — RoBits / VEX 0.5 in grid (0.201 in holes, #10).
-- `vex_square` — VEX square-hole 0.5 in grid — pending verified square width.
+- `robits_halfinch` — RoBits / REV ION 0.5 in grid (0.201 in holes, #10-32). *(imperial 0.5″ family)*
+- `vex_square` — VEX 0.5 in grid, 0.182 in **square** holes, #8-32.
+- `rev_duo_8mm` — REV DUO M3 mounting grid (8 mm pitch) — drilled Ø pending STEP verification.
 
 Each new pattern is one small YAML block + one Onshape sketch. That's the payoff of doing the foundation first.
