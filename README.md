@@ -81,7 +81,7 @@ Each part can support **one or more mounting standards** — that's why we organ
 | **OpenFTC Adapter Plate** | *the differentiator* — any two standards bridged on one part |
 | **OpenFTC L Gusset** | an L bracket with vendor grids on both legs |
 
-Source: [`featurescript/openftc-features.fs`](featurescript/openftc-features.fs) · Progress: [ROADMAP.md](ROADMAP.md)
+**[→ Creating a part (2-minute guide)](docs/creating-a-part.md)** · Source: [`featurescript/openftc-features.fs`](featurescript/openftc-features.fs) · Progress: [ROADMAP.md](ROADMAP.md)
 
 ## License
 
