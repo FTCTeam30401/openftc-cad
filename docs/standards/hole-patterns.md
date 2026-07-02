@@ -26,6 +26,8 @@ From those five things, any rectangular grid pattern can be generated. In Onshap
 
 The first pattern we standardize, because it's the cleanest and most widely used.
 
+> ✅ **Built:** live in the [OpenFTC CAD Onshape document](https://cad.onshape.com/documents/c1a27ea89277347b6bb7d589) (2026-07-02) — `Standards` Variable Studio holds `#grid`/`#hole`; the `gobilda_8mm_grid` Part Studio holds `#nx`/`#ny` and the pattern sketch. All four pattern values are expression-driven (fx).
+
 ```yaml
 name: gobilda_8mm_grid
 spacing: 8.0          # mm — master-variables.yaml -> vendor_grids.gobilda.grid_spacing

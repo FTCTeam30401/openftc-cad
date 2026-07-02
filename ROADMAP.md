@@ -10,10 +10,10 @@ Build the standards that every future model uses. **This is not a printable part
 
 - [x] **Master variable table** — grids (goBILDA/REV DUO/REV ION/RoBits/VEX), M3–M5 fasteners, heat-set inserts, bearings, material thicknesses, fillet conventions. *Data verified & sourced; 3 items flagged for STEP-file confirmation. See [master-variables.md](docs/standards/master-variables.md).*
 - [x] **Standard interface definitions** — per-ecosystem specs for [goBILDA](docs/standards/interfaces/gobilda.md), [REV](docs/standards/interfaces/rev.md), [RoBits](docs/standards/interfaces/robits.md), [VEX](docs/standards/interfaces/vex.md). *(Servos, motors, electronics interfaces still to add.)*
-- [~] **First reusable hole pattern** — parametric spec written ([hole-patterns.md](docs/standards/hole-patterns.md), `gobilda_8mm_grid`). **Onshape build is the next hands-on session** (Teaching Project 1: Variables + Sketches).
-- [x] **GitHub repository** with the full project structure. *(scaffolded locally; push to Anthem Robotics org pending)*
+- [x] **First reusable hole pattern** — `gobilda_8mm_grid` spec ([hole-patterns.md](docs/standards/hole-patterns.md)) **and built in Onshape** (2026-07-02): document-level `Standards` Variable Studio (`#grid`, `#hole`) + part variables (`#nx`, `#ny`) driving a fully parametric sketch pattern. Verified live: changing `#nx` 6→8 regenerated the grid.
+- [x] **GitHub repository** — [github.com/FTCTeam30401/openftc-cad](https://github.com/FTCTeam30401/openftc-cad) (public; org transfer planned).
 
-**Still open in Phase 1:** verify the 3 flagged hole dimensions from vendor STEP files; add servo/motor/electronics interface definitions; build the first hole pattern in Onshape.
+**Still open in Phase 1:** verify the 2 remaining flagged dimensions from vendor STEP files (REV DUO drilled hole Ø, Extended Motion Pattern row pitch); add servo/motor/electronics interface definitions.
 
 ## Phase 2 — Core Structural Library
 
