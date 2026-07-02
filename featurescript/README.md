@@ -34,6 +34,7 @@ All features live in one file — [`openftc-features.fs`](openftc-features.fs) �
 | **OpenFTC Plate** | ✅ Working — generated a 9×7 goBILDA plate w/ six 14 mm bearing holes + fillets, 2026-07-02 |
 | **OpenFTC Adapter Plate** | ✅ Working — generated a goBILDA(4×5) ↔ RoBits(3×3) adapter, 2026-07-02 |
 | **OpenFTC L Gusset** | ✅ Working — generated a 3-wide L bracket, holes on both legs, 2026-07-02 |
+| **OpenFTC U Gusset** | ✅ Working — channel bracket, hole grids on all three legs, 2026-07-02 |
 
 ### OpenFTC Plate
 
@@ -81,9 +82,15 @@ First hole row in each leg sits one half-pitch beyond the other leg's inner
 face so holes never collide with the corner. U/T variants and print-first
 ribs are planned.
 
+### OpenFTC U Gusset
+
+A channel bracket: base spanning two parallel vertical legs, vendor grid on
+all three. Leg hole cuts are blind (one leg's holes never tunnel across the
+channel into the other).
+
 ## Planned generators
 
-- **OpenFTC U/T Gusset** variants + print-first ribs
+- **OpenFTC T Gusset** + print-first ribs
 - **OpenFTC Heat-Set Boss** — CNC Kitchen/Ruthex-sized insert bosses
 - **OpenFTC Bearing Pocket** — 1611/608/REV pocket geometry
 
