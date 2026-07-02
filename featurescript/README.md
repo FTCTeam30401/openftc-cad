@@ -35,6 +35,9 @@ All features live in one file — [`openftc-features.fs`](openftc-features.fs) �
 | **OpenFTC Adapter Plate** | ✅ Working — generated a goBILDA(4×5) ↔ RoBits(3×3) adapter, 2026-07-02 |
 | **OpenFTC L Gusset** | ✅ Working — generated a 3-wide L bracket, holes on both legs, 2026-07-02 |
 | **OpenFTC U Gusset** | ✅ Working — channel bracket, hole grids on all three legs, 2026-07-02 |
+| **OpenFTC T Gusset** | ✅ Working — tee bracket, grids on base (both sides) + leg, 2026-07-02 |
+| **OpenFTC Heat-Set Boss** | ✅ Working — M3/M4/M5 insert bosses at sketch points, 2026-07-02 |
+| **OpenFTC Bearing Pocket** | ✅ Working — 1611/REV/608/625 pockets at sketch points, 2026-07-02 |
 
 ### OpenFTC Plate
 
@@ -88,11 +91,18 @@ A channel bracket: base spanning two parallel vertical legs, vendor grid on
 all three. Leg hole cuts are blind (one leg's holes never tunnel across the
 channel into the other).
 
+### OpenFTC Heat-Set Boss & Bearing Pocket
+
+Print-first hardware placement: sketch points where you want the hardware,
+select the face + those points. Bosses use CNC Kitchen/Ruthex pilot sizing
+(M3 4.0 / M4 5.6 / M5 6.4 mm) with auto height (insert length + 0.8 mm) and
+a wall parameter (default 1.6 mm, the Ruthex minimum). Pockets take a
+diametral fit clearance (default 0.15 mm) and cut one bearing-width deep.
+
 ## Planned generators
 
-- **OpenFTC T Gusset** + print-first ribs
-- **OpenFTC Heat-Set Boss** — CNC Kitchen/Ruthex-sized insert bosses
-- **OpenFTC Bearing Pocket** — 1611/608/REV pocket geometry
+- Print-first ribs for the gusset family
+- Servo mount generator (needs servo interface definitions first)
 
 ## Editing workflow
 

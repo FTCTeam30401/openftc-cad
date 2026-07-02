@@ -27,9 +27,10 @@ The heart of the project: custom Onshape features, sourced from [`featurescript/
 - [x] **OpenFTC Hole Pattern** — vendor-standard grids with mount/native hole sizing, center option, cut-through. *Compiled & cut-tested in Onshape 2026-07-02.*
 - [x] **OpenFTC Plate** — plate sized by its hole pattern + optional goBILDA bearing holes (14 mm @ 24 mm sub-grid) + corner fillets. *Generated & verified in Onshape 2026-07-02.*
 - [x] **OpenFTC L Gusset** — hole grids on both legs, corner-safe offsets. *Generated & verified 2026-07-02.*
-- [x] **OpenFTC U Gusset** — channel bracket, grids on all three legs, direction-safe blind leg cuts. *Generated & verified 2026-07-02.* (T variant + ribs planned)
-- [ ] **OpenFTC Heat-Set Boss** — CNC Kitchen/Ruthex-sized insert bosses
-- [ ] **OpenFTC Bearing Pocket** — 1611 / 608 / REV pocket geometry
+- [x] **OpenFTC U Gusset** — channel bracket, grids on all three legs, direction-safe blind leg cuts. *Generated & verified 2026-07-02.*
+- [x] **OpenFTC T Gusset** — tee bracket, grids on base (both sides) + center leg. *Generated & verified 2026-07-02.* (ribs planned)
+- [x] **OpenFTC Heat-Set Boss** — insert bosses at sketch points, CNC Kitchen/Ruthex sizing. *Generated & verified 2026-07-02.*
+- [x] **OpenFTC Bearing Pocket** — 1611/REV/608/625 pockets at sketch points w/ fit clearance. *Generated & verified 2026-07-02.*
 - [ ] VEX square-hole option for the Hole Pattern feature
 - [ ] Standoffs / cross members
 

@@ -673,3 +673,312 @@ export const openFtcUGusset = defineFeature(function(context is Context, id is I
                                 qCreatedBy(id + "leg2Holes", EntityType.BODY)])
                 });
     });
+
+// =====================================================================
+//  6. OpenFTC T Gusset
+// =====================================================================
+//  A tee bracket: vertical leg rising from the middle of the base, hole
+//  rows on both sides of it. Free base edges keep a half-pitch margin;
+//  rows adjacent to the leg keep a half-pitch off its faces.
+
+annotation { "Feature Type Name" : "OpenFTC T Gusset",
+             "Feature Type Description" : "Tee bracket: center vertical leg, vendor-standard hole grids on base (both sides) and leg. Part of OpenFTC CAD -- github.com/FTCTeam30401/openftc-cad" }
+export const openFtcTGusset = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+        annotation { "Name" : "Plane or planar face", "Filter" : GeometryType.PLANE, "MaxNumberOfPicks" : 1 }
+        definition.plane is Query;
+
+        annotation { "Name" : "Standard" }
+        definition.standard is OpenFtcStandard;
+
+        annotation { "Name" : "Columns (width)" }
+        isInteger(definition.nx, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Base: hole rows per side" }
+        isInteger(definition.nyEach, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Vertical leg: hole rows" }
+        isInteger(definition.nyVert, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Thickness" }
+        isLength(definition.thickness, OPENFTC_PLATE_THICKNESS_BOUNDS);
+
+        annotation { "Name" : "Hole size" }
+        definition.role is OpenFtcHoleRole;
+    }
+    {
+        const spec = openFtcStandardSpec(definition.standard);
+        const s = spec.spacing;
+        const d = definition.role == OpenFtcHoleRole.MOUNT ? spec.mount : spec.native;
+        const square = definition.standard == OpenFtcStandard.VEX && definition.role == OpenFtcHoleRole.NATIVE;
+        const t = definition.thickness;
+        const W = definition.nx * s;
+        const Yc = definition.nyEach * s;             // leg front face position
+        const D = 2 * Yc + t;                          // total base depth
+        const heightVert = t + definition.nyVert * s;
+
+        const basePlane = evPlane(context, { "face" : definition.plane });
+        const yDir = cross(basePlane.normal, basePlane.x);
+        const legPlane = plane(basePlane.origin + Yc * yDir, -yDir, basePlane.x);
+
+        // --- base -----------------------------------------------------------
+        var baseSk = newSketchOnPlane(context, id + "baseSk", { "sketchPlane" : basePlane });
+        skRectangle(baseSk, "rect", {
+                    "firstCorner" : vector(-W / 2, 0 * millimeter),
+                    "secondCorner" : vector(W / 2, D)
+                });
+        skSolve(baseSk);
+        extrude(context, id + "base", {
+                    "entities" : qSketchRegion(id + "baseSk"),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : t,
+                    "operationType" : NewBodyOperationType.NEW
+                });
+
+        // --- center vertical leg ----------------------------------------------
+        var legSk = newSketchOnPlane(context, id + "legSk", { "sketchPlane" : legPlane });
+        skRectangle(legSk, "rect", {
+                    "firstCorner" : vector(-W / 2, 0 * millimeter),
+                    "secondCorner" : vector(W / 2, heightVert)
+                });
+        skSolve(legSk);
+        extrude(context, id + "leg", {
+                    "entities" : qSketchRegion(id + "legSk"),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : t,
+                    "oppositeDirection" : true,
+                    "operationType" : NewBodyOperationType.NEW
+                });
+
+        opBoolean(context, id + "join", {
+                    "tools" : qUnion([
+                                qCreatedBy(id + "base", EntityType.BODY),
+                                qCreatedBy(id + "leg", EntityType.BODY)]),
+                    "operationType" : BooleanOperationType.UNION
+                });
+
+        // --- base holes: both sides of the leg ---------------------------------
+        var baseHoles = newSketchOnPlane(context, id + "baseHoles", { "sketchPlane" : basePlane });
+        for (var i = 0; i < definition.nx; i += 1)
+        {
+            for (var j = 0; j < definition.nyEach; j += 1)
+            {
+                skGridHole(baseHoles, "s1_" ~ i ~ "_" ~ j, vector(-W / 2 + s / 2 + i * s, s / 2 + j * s), d, square);
+                skGridHole(baseHoles, "s2_" ~ i ~ "_" ~ j, vector(-W / 2 + s / 2 + i * s, Yc + t + s / 2 + j * s), d, square);
+            }
+        }
+        skSolve(baseHoles);
+        extrude(context, id + "baseCut", {
+                    "entities" : qSketchRegion(id + "baseHoles", true),
+                    "endBound" : BoundingType.THROUGH_ALL,
+                    "hasSecondDirection" : true,
+                    "secondDirectionBound" : BoundingType.THROUGH_ALL,
+                    "operationType" : NewBodyOperationType.REMOVE,
+                    "defaultScope" : false,
+                    "booleanScope" : qCreatedBy(id + "base", EntityType.BODY)
+                });
+
+        // --- leg holes -----------------------------------------------------------
+        var legHoles = newSketchOnPlane(context, id + "legHoles", { "sketchPlane" : legPlane });
+        for (var i = 0; i < definition.nx; i += 1)
+        {
+            for (var k = 0; k < definition.nyVert; k += 1)
+            {
+                skGridHole(legHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square);
+            }
+        }
+        skSolve(legHoles);
+        extrude(context, id + "legCut", {
+                    "entities" : qSketchRegion(id + "legHoles", true),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : t * 1.01,
+                    "oppositeDirection" : true,
+                    "operationType" : NewBodyOperationType.REMOVE,
+                    "defaultScope" : false,
+                    "booleanScope" : qCreatedBy(id + "base", EntityType.BODY)
+                });
+
+        opDeleteBodies(context, id + "cleanup", {
+                    "entities" : qUnion([
+                                qCreatedBy(id + "baseSk", EntityType.BODY),
+                                qCreatedBy(id + "legSk", EntityType.BODY),
+                                qCreatedBy(id + "baseHoles", EntityType.BODY),
+                                qCreatedBy(id + "legHoles", EntityType.BODY)])
+                });
+    });
+
+// =====================================================================
+//  Print-first hardware: heat-set inserts & bearing pockets
+// =====================================================================
+//  Placement UX for both: sketch points where you want the hardware,
+//  then select those points (plus the face they sit on).
+
+export enum OpenFtcInsertSize
+{
+    annotation { "Name" : "M3 (4.0 mm pilot, 5.7 long)" }
+    M3,
+    annotation { "Name" : "M4 (5.6 mm pilot, 8.1 long)" }
+    M4,
+    annotation { "Name" : "M5 (6.4 mm pilot, 9.5 long)" }
+    M5
+}
+
+// CNC Kitchen / Ruthex standard-length inserts -- master-variables.yaml v0.2.0
+function openFtcInsertSpec(size is OpenFtcInsertSize) returns map
+{
+    if (size == OpenFtcInsertSize.M3)
+        return { "pilot" : 4.0 * millimeter, "length" : 5.7 * millimeter };
+    if (size == OpenFtcInsertSize.M4)
+        return { "pilot" : 5.6 * millimeter, "length" : 8.1 * millimeter };
+    return { "pilot" : 6.4 * millimeter, "length" : 9.5 * millimeter };
+}
+
+export enum OpenFtcBearing
+{
+    annotation { "Name" : "goBILDA 1611 (14 mm OD x 5)" }
+    GOBILDA_1611,
+    annotation { "Name" : "REV 49-1559 (12 mm OD x 3.5)" }
+    REV_1559,
+    annotation { "Name" : "608 skate / goBILDA 1600 (22 mm OD x 7)" }
+    B608,
+    annotation { "Name" : "625 (16 mm OD x 5)" }
+    B625
+}
+
+function openFtcBearingSpec(b is OpenFtcBearing) returns map
+{
+    if (b == OpenFtcBearing.GOBILDA_1611)
+        return { "od" : 14 * millimeter, "width" : 5 * millimeter };
+    if (b == OpenFtcBearing.REV_1559)
+        return { "od" : 12 * millimeter, "width" : 3.5 * millimeter };
+    if (b == OpenFtcBearing.B608)
+        return { "od" : 22 * millimeter, "width" : 7 * millimeter };
+    return { "od" : 16 * millimeter, "width" : 5 * millimeter };
+}
+
+// Project a world point into a plane's 2D sketch coordinates.
+function openFtcPlanePoint(p is Plane, wp is Vector) returns Vector
+{
+    const rel = wp - p.origin;
+    return vector(dot(rel, p.x), dot(rel, cross(p.normal, p.x)));
+}
+
+const OPENFTC_BOSS_WALL_BOUNDS = { (millimeter) : [0.8, 1.6, 10] } as LengthBoundSpec;
+const OPENFTC_FIT_CLEARANCE_BOUNDS = { (millimeter) : [0, 0.15, 1] } as LengthBoundSpec;
+
+// =====================================================================
+//  7. OpenFTC Heat-Set Boss
+// =====================================================================
+
+annotation { "Feature Type Name" : "OpenFTC Heat-Set Boss",
+             "Feature Type Description" : "Heat-set insert bosses (CNC Kitchen / Ruthex sizing) at selected sketch points on a face. Part of OpenFTC CAD -- github.com/FTCTeam30401/openftc-cad" }
+export const openFtcHeatSetBoss = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+        annotation { "Name" : "Face to build on", "Filter" : GeometryType.PLANE, "MaxNumberOfPicks" : 1 }
+        definition.face is Query;
+
+        annotation { "Name" : "Boss locations (sketch points)", "Filter" : EntityType.VERTEX }
+        definition.points is Query;
+
+        annotation { "Name" : "Insert size" }
+        definition.insert is OpenFtcInsertSize;
+
+        annotation { "Name" : "Boss wall" }
+        isLength(definition.wall, OPENFTC_BOSS_WALL_BOUNDS);
+    }
+    {
+        const spec = openFtcInsertSpec(definition.insert);
+        const bossDia = spec.pilot + 2 * definition.wall;
+        const bossHeight = spec.length + 0.8 * millimeter;   // insert seats flush with margin below
+
+        const facePlane = evPlane(context, { "face" : definition.face });
+        const pts = evaluateQuery(context, definition.points);
+        if (size(pts) == 0)
+            throw regenError("Select at least one sketch point for boss placement.", ["points"]);
+
+        var bossSk = newSketchOnPlane(context, id + "bossSk", { "sketchPlane" : facePlane });
+        var pilotSk = newSketchOnPlane(context, id + "pilotSk", { "sketchPlane" : facePlane });
+        for (var n = 0; n < size(pts); n += 1)
+        {
+            const c = openFtcPlanePoint(facePlane, evVertexPoint(context, { "vertex" : pts[n] }));
+            skCircle(bossSk, "b" ~ n, { "center" : c, "radius" : bossDia / 2 });
+            skCircle(pilotSk, "p" ~ n, { "center" : c, "radius" : spec.pilot / 2 });
+        }
+        skSolve(bossSk);
+        skSolve(pilotSk);
+
+        extrude(context, id + "boss", {
+                    "entities" : qSketchRegion(id + "bossSk", true),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : bossHeight,
+                    "operationType" : NewBodyOperationType.ADD
+                });
+        extrude(context, id + "pilot", {
+                    "entities" : qSketchRegion(id + "pilotSk", true),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : bossHeight,
+                    "operationType" : NewBodyOperationType.REMOVE
+                });
+
+        opDeleteBodies(context, id + "cleanup", {
+                    "entities" : qUnion([
+                                qCreatedBy(id + "bossSk", EntityType.BODY),
+                                qCreatedBy(id + "pilotSk", EntityType.BODY)])
+                });
+    });
+
+// =====================================================================
+//  8. OpenFTC Bearing Pocket
+// =====================================================================
+
+annotation { "Feature Type Name" : "OpenFTC Bearing Pocket",
+             "Feature Type Description" : "Press-fit bearing pockets (goBILDA 1611 / REV / 608 / 625) at selected sketch points on a face. Part of OpenFTC CAD -- github.com/FTCTeam30401/openftc-cad" }
+export const openFtcBearingPocket = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+        annotation { "Name" : "Face to pocket", "Filter" : GeometryType.PLANE, "MaxNumberOfPicks" : 1 }
+        definition.face is Query;
+
+        annotation { "Name" : "Pocket centers (sketch points)", "Filter" : EntityType.VERTEX }
+        definition.points is Query;
+
+        annotation { "Name" : "Bearing" }
+        definition.bearing is OpenFtcBearing;
+
+        annotation { "Name" : "Fit clearance (on diameter)" }
+        isLength(definition.clearance, OPENFTC_FIT_CLEARANCE_BOUNDS);
+    }
+    {
+        const spec = openFtcBearingSpec(definition.bearing);
+        const dia = spec.od + definition.clearance;
+
+        const facePlane = evPlane(context, { "face" : definition.face });
+        const pts = evaluateQuery(context, definition.points);
+        if (size(pts) == 0)
+            throw regenError("Select at least one sketch point for pocket placement.", ["points"]);
+
+        var sk = newSketchOnPlane(context, id + "sk", { "sketchPlane" : facePlane });
+        for (var n = 0; n < size(pts); n += 1)
+        {
+            const c = openFtcPlanePoint(facePlane, evVertexPoint(context, { "vertex" : pts[n] }));
+            skCircle(sk, "c" ~ n, { "center" : c, "radius" : dia / 2 });
+        }
+        skSolve(sk);
+
+        // Pocket cuts INTO the material (opposite the face's outward normal),
+        // one bearing-width deep. If the part is thinner, it becomes a
+        // through-bore -- fine for printed plates.
+        extrude(context, id + "cut", {
+                    "entities" : qSketchRegion(id + "sk", true),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : spec.width,
+                    "oppositeDirection" : true,
+                    "operationType" : NewBodyOperationType.REMOVE
+                });
+
+        opDeleteBodies(context, id + "cleanup", {
+                    "entities" : qCreatedBy(id + "sk", EntityType.BODY)
+                });
+    });
