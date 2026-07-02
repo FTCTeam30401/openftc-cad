@@ -60,10 +60,11 @@ All dimensions trace to [`standards/master-variables.yaml`](../standards/master-
 clearance. The dialog makes that choice explicit.
 
 **Known limitations (v1):**
-- VEX native holes are actually 0.182 in *square*; v1 generates round holes
-  (correct for bolt-through use, which is the common case for printed parts).
-- One pattern per feature invocation; no bearing-hole interleaving yet
-  (goBILDA 14 mm bearing holes every 24 mm are planned as an option).
+- One pattern per feature invocation; bearing-hole interleaving lives in the
+  Plate feature (not yet in the bare pattern).
+
+**VEX square holes:** selecting VEX + "replicate vendor member" generates true
+0.182 in square holes (verified 2026-07-02); all other combinations are round.
 
 ### OpenFTC Adapter Plate
 

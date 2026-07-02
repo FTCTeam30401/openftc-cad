@@ -63,6 +63,19 @@ function openFtcStandardSpec(standard is OpenFtcStandard) returns map
 
 const GOBILDA_BEARING_DIA = 14 * millimeter;   // verified from goBILDA STEP files
 
+// Draw one grid hole: a circle, or (VEX native) a square of the vendor's
+// true 0.182 in square-hole width (VEX drawing PN 276-2600).
+function skGridHole(sketch is Sketch, name is string, center is Vector, dia is ValueWithUnits, square is boolean)
+{
+    if (square)
+        skRectangle(sketch, name, {
+                    "firstCorner" : center - vector(dia / 2, dia / 2),
+                    "secondCorner" : center + vector(dia / 2, dia / 2)
+                });
+    else
+        skCircle(sketch, name, { "center" : center, "radius" : dia / 2 });
+}
+
 // =====================================================================
 //  1. OpenFTC Hole Pattern
 // =====================================================================
@@ -97,6 +110,7 @@ export const openFtcHolePattern = defineFeature(function(context is Context, id 
         const spec = openFtcStandardSpec(definition.standard);
         const s = spec.spacing;
         const d = definition.role == OpenFtcHoleRole.MOUNT ? spec.mount : spec.native;
+        const square = definition.standard == OpenFtcStandard.VEX && definition.role == OpenFtcHoleRole.NATIVE;
 
         const plane = evPlane(context, { "face" : definition.plane });
         var sketch = newSketchOnPlane(context, id + "sketch", { "sketchPlane" : plane });
@@ -113,10 +127,7 @@ export const openFtcHolePattern = defineFeature(function(context is Context, id 
         {
             for (var j = 0; j < definition.ny; j += 1)
             {
-                skCircle(sketch, "hole_" ~ i ~ "_" ~ j, {
-                            "center" : vector(x0 + i * s, y0 + j * s),
-                            "radius" : d / 2
-                        });
+                skGridHole(sketch, "hole_" ~ i ~ "_" ~ j, vector(x0 + i * s, y0 + j * s), d, square);
             }
         }
         skSolve(sketch);
@@ -187,6 +198,7 @@ export const openFtcPlate = defineFeature(function(context is Context, id is Id,
         const spec = openFtcStandardSpec(definition.standard);
         const s = spec.spacing;
         const d = definition.role == OpenFtcHoleRole.MOUNT ? spec.mount : spec.native;
+        const square = definition.standard == OpenFtcStandard.VEX && definition.role == OpenFtcHoleRole.NATIVE;
         const W = definition.nx * s;
         const H = definition.ny * s;
 
@@ -225,6 +237,7 @@ export const openFtcPlate = defineFeature(function(context is Context, id is Id,
                 const x = -W / 2 + s / 2 + i * s;
                 const y = -H / 2 + s / 2 + j * s;
                 var dia = d;
+                var isBearing = false;
                 if (definition.bearingHoles &&
                     definition.standard == OpenFtcStandard.GOBILDA &&
                     i > 0 && i < definition.nx - 1 &&
@@ -232,11 +245,9 @@ export const openFtcPlate = defineFeature(function(context is Context, id is Id,
                     (i - 1) % 3 == 0 && (j - 1) % 3 == 0)
                 {
                     dia = GOBILDA_BEARING_DIA;
+                    isBearing = true;
                 }
-                skCircle(holes, "h_" ~ i ~ "_" ~ j, {
-                            "center" : vector(x, y),
-                            "radius" : dia / 2
-                        });
+                skGridHole(holes, "h_" ~ i ~ "_" ~ j, vector(x, y), dia, square && !isBearing);
             }
         }
         skSolve(holes);
@@ -412,6 +423,7 @@ export const openFtcLGusset = defineFeature(function(context is Context, id is I
         const spec = openFtcStandardSpec(definition.standard);
         const s = spec.spacing;
         const d = definition.role == OpenFtcHoleRole.MOUNT ? spec.mount : spec.native;
+        const square = definition.standard == OpenFtcStandard.VEX && definition.role == OpenFtcHoleRole.NATIVE;
         const t = definition.thickness;
         const W = definition.nx * s;
         const depthBase = t + definition.nyBase * s;
@@ -465,10 +477,7 @@ export const openFtcLGusset = defineFeature(function(context is Context, id is I
         {
             for (var j = 0; j < definition.nyBase; j += 1)
             {
-                skCircle(baseHoles, "h_" ~ i ~ "_" ~ j, {
-                            "center" : vector(-W / 2 + s / 2 + i * s, t + s / 2 + j * s),
-                            "radius" : d / 2
-                        });
+                skGridHole(baseHoles, "h_" ~ i ~ "_" ~ j, vector(-W / 2 + s / 2 + i * s, t + s / 2 + j * s), d, square);
             }
         }
         skSolve(baseHoles);
@@ -488,10 +497,7 @@ export const openFtcLGusset = defineFeature(function(context is Context, id is I
         {
             for (var k = 0; k < definition.nyVert; k += 1)
             {
-                skCircle(vertHoles, "h_" ~ i ~ "_" ~ k, {
-                            "center" : vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s),
-                            "radius" : d / 2
-                        });
+                skGridHole(vertHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square);
             }
         }
         skSolve(vertHoles);

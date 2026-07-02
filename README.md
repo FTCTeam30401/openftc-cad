@@ -72,7 +72,16 @@ Each part can support **one or more mounting standards** — that's why we organ
 
 ## Project Status
 
-🚧 **Phase 1 — Foundation.** We are building the standards every future model depends on. See [ROADMAP.md](ROADMAP.md).
+⚙️ **Phase 2-3 — the generators are live.** Four custom Onshape features, generated from the audited standards and verified in CAD (2026-07-02):
+
+| Generator | What one dialog produces |
+|-----------|--------------------------|
+| **OpenFTC Hole Pattern** | any vendor's hole grid on any face — incl. true VEX 0.182″ square holes |
+| **OpenFTC Plate** | a printable pattern plate; optional goBILDA 14 mm bearing holes; corner fillets |
+| **OpenFTC Adapter Plate** | *the differentiator* — any two standards bridged on one part |
+| **OpenFTC L Gusset** | an L bracket with vendor grids on both legs |
+
+Source: [`featurescript/openftc-features.fs`](featurescript/openftc-features.fs) · Progress: [ROADMAP.md](ROADMAP.md)
 
 ## License
 
