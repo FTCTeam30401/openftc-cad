@@ -32,6 +32,8 @@ All features live in one file — [`openftc-features.fs`](openftc-features.fs) �
 |---------|--------|
 | **OpenFTC Hole Pattern** | ✅ Working — compiled & cut-tested 2026-07-02 |
 | **OpenFTC Plate** | ✅ Working — generated a 9×7 goBILDA plate w/ six 14 mm bearing holes + fillets, 2026-07-02 |
+| **OpenFTC Adapter Plate** | ✅ Working — generated a goBILDA(4×5) ↔ RoBits(3×3) adapter, 2026-07-02 |
+| **OpenFTC L Gusset** | ✅ Working — generated a 3-wide L bracket, holes on both legs, 2026-07-02 |
 
 ### OpenFTC Plate
 
@@ -63,11 +65,24 @@ clearance. The dialog makes that choice explicit.
 - One pattern per feature invocation; no bearing-hole interleaving yet
   (goBILDA 14 mm bearing holes every 24 mm are planned as an option).
 
+### OpenFTC Adapter Plate
+
+Two hole-pattern zones — any two standards — side by side on one plate. Zone
+widths/heights derive from each standard's own spacing; plate height is the
+larger of the two. Holes are always mount-clearance (adapters bolt onto both
+structures). This is the Phase 3 signature: instead of redesigning a robot,
+print the bridge.
+
+### OpenFTC L Gusset
+
+Two perpendicular legs sharing a corner, each carrying the standard's grid.
+First hole row in each leg sits one half-pitch beyond the other leg's inner
+face so holes never collide with the corner. U/T variants and print-first
+ribs are planned.
+
 ## Planned generators
 
-- **OpenFTC Plate** — outline + auto hole pattern + optional bearing holes + corner fillets
-- **OpenFTC Gusset** (L / U / T) — print-first ribs, role-aware holes
-- **OpenFTC Adapter Plate** — two standards, one part (the Phase 3 signature)
+- **OpenFTC U/T Gusset** variants + print-first ribs
 - **OpenFTC Heat-Set Boss** — CNC Kitchen/Ruthex-sized insert bosses
 - **OpenFTC Bearing Pocket** — 1611/608/REV pocket geometry
 

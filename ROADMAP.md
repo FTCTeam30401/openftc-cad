@@ -26,7 +26,7 @@ The heart of the project: custom Onshape features, sourced from [`featurescript/
 
 - [x] **OpenFTC Hole Pattern** — vendor-standard grids with mount/native hole sizing, center option, cut-through. *Compiled & cut-tested in Onshape 2026-07-02.*
 - [x] **OpenFTC Plate** — plate sized by its hole pattern + optional goBILDA bearing holes (14 mm @ 24 mm sub-grid) + corner fillets. *Generated & verified in Onshape 2026-07-02.*
-- [ ] **OpenFTC Gusset** (L / U / T) — print-first ribs, role-aware holes
+- [x] **OpenFTC L Gusset** — hole grids on both legs, corner-safe offsets. *Generated & verified 2026-07-02.* (U/T variants + ribs planned)
 - [ ] **OpenFTC Heat-Set Boss** — CNC Kitchen/Ruthex-sized insert bosses
 - [ ] **OpenFTC Bearing Pocket** — 1611 / 608 / REV pocket geometry
 - [ ] VEX square-hole option for the Hole Pattern feature
@@ -34,7 +34,7 @@ The heart of the project: custom Onshape features, sourced from [`featurescript/
 
 ## Phase 3 — Universal Adapters *(the differentiator)*
 
-Instead of redesigning robots, teams print an adapter. Built as the **OpenFTC Adapter Plate** feature: pick two standards, get one part. The three hardware families ([master-variables.md §1a](docs/standards/master-variables.md#1a-cross-vendor-hardware-families)) define the map:
+Instead of redesigning robots, teams print an adapter. **The OpenFTC Adapter Plate feature is live** (2026-07-02): pick any two standards, get one part — verified with a goBILDA↔RoBits plate. Remaining work is validating each pairing in print:
 
 - [ ] goBILDA ↔ REV DUO (metric bridge, M4↔M3)
 - [ ] Metric 8 mm ↔ Imperial 0.5″ (the high-value jump)

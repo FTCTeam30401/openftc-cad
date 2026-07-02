@@ -257,3 +257,259 @@ export const openFtcPlate = defineFeature(function(context is Context, id is Id,
                                 qCreatedBy(id + "holes", EntityType.BODY)])
                 });
     });
+
+// =====================================================================
+//  3. OpenFTC Adapter Plate  --  two standards, one part
+// =====================================================================
+//  The cross-vendor bridge: zone A carries standard A's hole grid, zone B
+//  carries standard B's, side by side on one plate. Adapters bolt onto
+//  both structures, so holes are always mount-clearance size.
+
+annotation { "Feature Type Name" : "OpenFTC Adapter Plate",
+             "Feature Type Description" : "Cross-vendor adapter: two hole-pattern zones (any two standards) on one printable plate. Part of OpenFTC CAD -- github.com/FTCTeam30401/openftc-cad" }
+export const openFtcAdapterPlate = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+        annotation { "Name" : "Plane or planar face", "Filter" : GeometryType.PLANE, "MaxNumberOfPicks" : 1 }
+        definition.plane is Query;
+
+        annotation { "Name" : "Standard A (left zone)" }
+        definition.standardA is OpenFtcStandard;
+
+        annotation { "Name" : "A: Columns" }
+        isInteger(definition.nxA, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "A: Rows" }
+        isInteger(definition.nyA, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Standard B (right zone)" }
+        definition.standardB is OpenFtcStandard;
+
+        annotation { "Name" : "B: Columns" }
+        isInteger(definition.nxB, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "B: Rows" }
+        isInteger(definition.nyB, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Thickness" }
+        isLength(definition.thickness, OPENFTC_PLATE_THICKNESS_BOUNDS);
+
+        annotation { "Name" : "Corner fillet radius" }
+        isLength(definition.filletRadius, OPENFTC_FILLET_BOUNDS);
+    }
+    {
+        const specA = openFtcStandardSpec(definition.standardA);
+        const specB = openFtcStandardSpec(definition.standardB);
+        const sA = specA.spacing;
+        const sB = specB.spacing;
+        const WA = definition.nxA * sA;
+        const WB = definition.nxB * sB;
+        const HA = definition.nyA * sA;
+        const HB = definition.nyB * sB;
+        const W = WA + WB;
+        const H = max(HA, HB);
+
+        const plane = evPlane(context, { "face" : definition.plane });
+
+        // --- plate body ---------------------------------------------------
+        var outline = newSketchOnPlane(context, id + "outline", { "sketchPlane" : plane });
+        skRectangle(outline, "rect", {
+                    "firstCorner" : vector(-W / 2, -H / 2),
+                    "secondCorner" : vector(W / 2, H / 2)
+                });
+        skSolve(outline);
+        extrude(context, id + "plate", {
+                    "entities" : qSketchRegion(id + "outline"),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : definition.thickness,
+                    "operationType" : NewBodyOperationType.NEW
+                });
+
+        if (definition.filletRadius > 0 * millimeter)
+        {
+            opFillet(context, id + "fillet", {
+                        "entities" : qNonCapEntity(id + "plate", EntityType.EDGE),
+                        "radius" : definition.filletRadius
+                    });
+        }
+
+        // --- holes: zone A (left) then zone B (right), both clearance -----
+        var holes = newSketchOnPlane(context, id + "holes", { "sketchPlane" : plane });
+        for (var i = 0; i < definition.nxA; i += 1)
+        {
+            for (var j = 0; j < definition.nyA; j += 1)
+            {
+                skCircle(holes, "a_" ~ i ~ "_" ~ j, {
+                            "center" : vector(-W / 2 + sA / 2 + i * sA, -HA / 2 + sA / 2 + j * sA),
+                            "radius" : specA.mount / 2
+                        });
+            }
+        }
+        for (var i = 0; i < definition.nxB; i += 1)
+        {
+            for (var j = 0; j < definition.nyB; j += 1)
+            {
+                skCircle(holes, "b_" ~ i ~ "_" ~ j, {
+                            "center" : vector(-W / 2 + WA + sB / 2 + i * sB, -HB / 2 + sB / 2 + j * sB),
+                            "radius" : specB.mount / 2
+                        });
+            }
+        }
+        skSolve(holes);
+        extrude(context, id + "cut", {
+                    "entities" : qSketchRegion(id + "holes", true),
+                    "endBound" : BoundingType.THROUGH_ALL,
+                    "hasSecondDirection" : true,
+                    "secondDirectionBound" : BoundingType.THROUGH_ALL,
+                    "operationType" : NewBodyOperationType.REMOVE,
+                    "defaultScope" : false,
+                    "booleanScope" : qCreatedBy(id + "plate", EntityType.BODY)
+                });
+
+        opDeleteBodies(context, id + "cleanup", {
+                    "entities" : qUnion([
+                                qCreatedBy(id + "outline", EntityType.BODY),
+                                qCreatedBy(id + "holes", EntityType.BODY)])
+                });
+    });
+
+// =====================================================================
+//  4. OpenFTC L Gusset
+// =====================================================================
+//  Two perpendicular legs sharing a corner, each carrying the standard's
+//  hole grid. The base leg lies on the picked plane; the vertical leg
+//  rises from its back edge. First hole row in each leg sits one
+//  half-pitch beyond the other leg's inner face, so holes never collide
+//  with the corner material.
+
+annotation { "Feature Type Name" : "OpenFTC L Gusset",
+             "Feature Type Description" : "L bracket with vendor-standard hole grids on both legs. Part of OpenFTC CAD -- github.com/FTCTeam30401/openftc-cad" }
+export const openFtcLGusset = defineFeature(function(context is Context, id is Id, definition is map)
+    precondition
+    {
+        annotation { "Name" : "Plane or planar face", "Filter" : GeometryType.PLANE, "MaxNumberOfPicks" : 1 }
+        definition.plane is Query;
+
+        annotation { "Name" : "Standard" }
+        definition.standard is OpenFtcStandard;
+
+        annotation { "Name" : "Columns (width)" }
+        isInteger(definition.nx, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Base leg: hole rows" }
+        isInteger(definition.nyBase, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Vertical leg: hole rows" }
+        isInteger(definition.nyVert, POSITIVE_COUNT_BOUNDS);
+
+        annotation { "Name" : "Thickness" }
+        isLength(definition.thickness, OPENFTC_PLATE_THICKNESS_BOUNDS);
+
+        annotation { "Name" : "Hole size" }
+        definition.role is OpenFtcHoleRole;
+    }
+    {
+        const spec = openFtcStandardSpec(definition.standard);
+        const s = spec.spacing;
+        const d = definition.role == OpenFtcHoleRole.MOUNT ? spec.mount : spec.native;
+        const t = definition.thickness;
+        const W = definition.nx * s;
+        const depthBase = t + definition.nyBase * s;
+        const heightVert = t + definition.nyVert * s;
+
+        const basePlane = evPlane(context, { "face" : definition.plane });
+        const yDir = cross(basePlane.normal, basePlane.x);
+        // Vertical sketch plane: on the corner line, facing outward (-y),
+        // so its sketch-Y axis runs up the vertical leg (+normal).
+        const vertPlane = plane(basePlane.origin, -yDir, basePlane.x);
+
+        // --- base leg ------------------------------------------------------
+        var baseSk = newSketchOnPlane(context, id + "baseSk", { "sketchPlane" : basePlane });
+        skRectangle(baseSk, "rect", {
+                    "firstCorner" : vector(-W / 2, 0 * millimeter),
+                    "secondCorner" : vector(W / 2, depthBase)
+                });
+        skSolve(baseSk);
+        extrude(context, id + "base", {
+                    "entities" : qSketchRegion(id + "baseSk"),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : t,
+                    "operationType" : NewBodyOperationType.NEW
+                });
+
+        // --- vertical leg ----------------------------------------------------
+        var vertSk = newSketchOnPlane(context, id + "vertSk", { "sketchPlane" : vertPlane });
+        skRectangle(vertSk, "rect", {
+                    "firstCorner" : vector(-W / 2, 0 * millimeter),
+                    "secondCorner" : vector(W / 2, heightVert)
+                });
+        skSolve(vertSk);
+        extrude(context, id + "vert", {
+                    "entities" : qSketchRegion(id + "vertSk"),
+                    "endBound" : BoundingType.BLIND,
+                    "depth" : t,
+                    "oppositeDirection" : true,
+                    "operationType" : NewBodyOperationType.NEW
+                });
+
+        opBoolean(context, id + "join", {
+                    "tools" : qUnion([
+                                qCreatedBy(id + "base", EntityType.BODY),
+                                qCreatedBy(id + "vert", EntityType.BODY)]),
+                    "operationType" : BooleanOperationType.UNION
+                });
+
+        // --- base-leg holes ---------------------------------------------------
+        var baseHoles = newSketchOnPlane(context, id + "baseHoles", { "sketchPlane" : basePlane });
+        for (var i = 0; i < definition.nx; i += 1)
+        {
+            for (var j = 0; j < definition.nyBase; j += 1)
+            {
+                skCircle(baseHoles, "h_" ~ i ~ "_" ~ j, {
+                            "center" : vector(-W / 2 + s / 2 + i * s, t + s / 2 + j * s),
+                            "radius" : d / 2
+                        });
+            }
+        }
+        skSolve(baseHoles);
+        extrude(context, id + "baseCut", {
+                    "entities" : qSketchRegion(id + "baseHoles", true),
+                    "endBound" : BoundingType.THROUGH_ALL,
+                    "hasSecondDirection" : true,
+                    "secondDirectionBound" : BoundingType.THROUGH_ALL,
+                    "operationType" : NewBodyOperationType.REMOVE,
+                    "defaultScope" : false,
+                    "booleanScope" : qCreatedBy(id + "base", EntityType.BODY)
+                });
+
+        // --- vertical-leg holes ----------------------------------------------
+        var vertHoles = newSketchOnPlane(context, id + "vertHoles", { "sketchPlane" : vertPlane });
+        for (var i = 0; i < definition.nx; i += 1)
+        {
+            for (var k = 0; k < definition.nyVert; k += 1)
+            {
+                skCircle(vertHoles, "h_" ~ i ~ "_" ~ k, {
+                            "center" : vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s),
+                            "radius" : d / 2
+                        });
+            }
+        }
+        skSolve(vertHoles);
+        extrude(context, id + "vertCut", {
+                    "entities" : qSketchRegion(id + "vertHoles", true),
+                    "endBound" : BoundingType.THROUGH_ALL,
+                    "hasSecondDirection" : true,
+                    "secondDirectionBound" : BoundingType.THROUGH_ALL,
+                    "operationType" : NewBodyOperationType.REMOVE,
+                    "defaultScope" : false,
+                    "booleanScope" : qCreatedBy(id + "base", EntityType.BODY)
+                });
+
+        opDeleteBodies(context, id + "cleanup", {
+                    "entities" : qUnion([
+                                qCreatedBy(id + "baseSk", EntityType.BODY),
+                                qCreatedBy(id + "vertSk", EntityType.BODY),
+                                qCreatedBy(id + "baseHoles", EntityType.BODY),
+                                qCreatedBy(id + "vertHoles", EntityType.BODY)])
+                });
+    });
