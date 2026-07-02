@@ -1,0 +1,173 @@
+# =============================================================================
+# OpenFTC CAD — MASTER VARIABLES  (machine-readable source of truth)
+# =============================================================================
+# This file is the single source of truth for every dimension used in the
+# library. Onshape variable tables, docs, and (eventually) FeatureScripts all
+# derive from these numbers. Do NOT re-type dimensions elsewhere — reference
+# them here.
+#
+# confidence:  verified   = confirmed against >=2 authoritative sources
+#              moderate   = single/secondary source, or nominal-vs-actual gap
+#              unverified = flagged; DO NOT trust until pulled from a vendor
+#                           STEP file / drawing or physically measured
+#
+# All lengths in millimetres unless a field name ends in _in (inches).
+# Human-readable version with full sources: docs/standards/master-variables.md
+# =============================================================================
+
+meta:
+  version: 0.1.0
+  status: Phase 1 — Foundation (draft)
+  units:
+    inch_mm: 25.4          # 1 inch = 25.4 mm (exact)
+
+# -----------------------------------------------------------------------------
+# VENDOR GRIDS  — the mounting patterns each ecosystem is built on
+# -----------------------------------------------------------------------------
+vendor_grids:
+
+  gobilda:
+    system: metric
+    grid_spacing: 8.0           # the goBILDA "pattern"; confidence: verified
+    hole_label: 4.0             # goBILDA's own "4mm hole" nomenclature
+    hole_actual: null           # UNVERIFIED — real M4 clearance is ~4.3-4.5; pull STEP
+    fastener: M4
+    bearing_hole: 14.0          # verified
+    secondary_pattern: [32.0, 32.0]   # standard block mounting square (also 16x32)
+    tapped_grid: 16.0           # tapped-hole grid on adapters
+    confidence: verified        # grid/fastener/bearing verified; hole_actual unverified
+
+  rev_duo:                      # REV's metric FTC build system
+    system: metric
+    extrusion: [15.0, 15.0]     # 15x15 mm T-slot; verified
+    channel_u: [45.0, 45.0]     # 45x45 mm U-channel
+    channel_c: [45.0, 15.0]     # 45x15 mm C-channel
+    motion_pattern_pitch: 16.0  # mounting every 16 mm; verified
+    motion_bolt_circle: 16.0    # M3 holes on a 16 mm-dia circle
+    fastener: M3
+    hole_actual: null           # UNVERIFIED — M3 clearance ~3.2-3.4; pull STEP
+    maxtube_2x1_wall: 3.175      # 0.125" wall on the 2" face; ~1.0 on 1" face
+    confidence: verified        # spacing/fastener verified; hole_actual unverified
+
+  rev_ion:                      # REV's imperial build system (distinct from DUO)
+    system: imperial
+    hole_pitch: 12.7            # 0.5 in; verified
+    hole_pitch_in: 0.5
+    fastener: "#10-32"
+    hex_shaft_across_corners: 13.75   # 1/2" rounded hex
+    bearing_od_in: 1.125
+    note: "MAXSpline bore system; separate from REV DUO — do not mix patterns blindly"
+    confidence: verified
+
+  robits:                       # AndyMark RoBits — the cleanest-specified vendor
+    system: imperial
+    grid_spacing: 12.7          # 0.5 in; verified
+    grid_spacing_in: 0.5
+    hole_dia: 5.11              # 0.201 in clearance for #10; verified
+    hole_dia_in: 0.201
+    fastener: "#10-32"
+    gusset_resolution: 6.35     # 0.25 in
+    bearing_hole_pitch: 38.1    # every 1.5 in
+    tube: [25.4, 25.4]          # 1x1 in
+    shaft: "3/8 in hex"
+    confidence: verified
+
+  vex:                          # VEX EDR / V5 metal structure (NOT VEX IQ)
+    system: imperial
+    hole_pitch: 12.7            # 0.5 in; verified
+    hole_pitch_in: 0.5
+    hole_shape: square
+    hole_width: null            # UNVERIFIED — community ~0.181 in (~4.6mm); pull STEP
+    hole_width_community_in: 0.181
+    fastener: "#8-32"
+    channels: ["1x2", "1x3", "1x5"]   # hole-count naming
+    confidence: moderate        # pitch/fastener verified; square hole width unverified
+
+# -----------------------------------------------------------------------------
+# FASTENERS  — M3 / M4 / M5 (metric; ISO/DIN)   confidence: verified
+# -----------------------------------------------------------------------------
+fasteners:
+  m3:
+    clearance_hole: { close: 3.2, normal: 3.4, loose: 3.6 }   # ISO 273
+    tap_drill: 2.5              # M3 x 0.5 coarse
+    shcs: { head_dia: 5.5, head_height: 3.0, hex_key: 2.5 }   # ISO 4762 / DIN 912 (max)
+    hex_nut: { across_flats: 5.5, thickness: 2.4, across_corners: 6.35 }  # ISO 4032 / DIN 934
+  m4:
+    clearance_hole: { close: 4.3, normal: 4.5, loose: 4.8 }
+    tap_drill: 3.3             # M4 x 0.7 coarse
+    shcs: { head_dia: 7.0, head_height: 4.0, hex_key: 3.0 }
+    hex_nut: { across_flats: 7.0, thickness: 3.2, across_corners: 8.08 }
+  m5:
+    clearance_hole: { close: 5.3, normal: 5.5, loose: 5.8 }
+    tap_drill: 4.2             # M5 x 0.8 coarse
+    shcs: { head_dia: 8.5, head_height: 5.0, hex_key: 4.0 }
+    hex_nut: { across_flats: 8.0, thickness: 4.7, across_corners: 9.24 }  # NOTE m=4.7 max (corrected)
+
+# captive/trapped nut POCKET convention for 3D prints (add clearance over nut)
+# confidence: moderate — maker convention, varies by printer/material; test-print
+captive_nut_pocket:
+  across_flats_clearance: 0.4   # add to nut across-flats (range 0.2-0.5)
+  depth_clearance: 0.2          # add to nut thickness
+  note: "Size the hex pocket by across-flats but VERIFY against across-corners. Print a fit gauge per printer."
+
+# -----------------------------------------------------------------------------
+# HEAT-SET THREADED INSERTS  (brass, press/heat install)
+# Defaults = CNC Kitchen / Ruthex "standard" (the de-facto FTC community insert;
+# both brands are dimensionally identical). confidence: verified for these two.
+# hole_dia is the value to model the receiving boss hole to.
+# -----------------------------------------------------------------------------
+heat_set_inserts:
+  m3: { hole_dia: 4.0, length: 5.7, od: 4.6, mcmaster_hole: 4.2 }
+  m4: { hole_dia: 5.6, length: 8.1, od: 6.3, mcmaster_hole: 5.3 }
+  m5: { hole_dia: 6.4, length: 9.5, od: 7.1, mcmaster_hole: 6.4 }
+  min_boss_wall: 1.6            # min plastic wall around insert (Ruthex spec)
+  note: >
+    Defaults are CNC Kitchen/Ruthex standard-length. McMaster 94459A tapered
+    inserts run slightly different on M4 (~5.3). Short-length variants share the
+    same hole_dia. Match the hole to the brand you actually buy; if fit is tight
+    or loose, adjust in 0.1 mm steps and test-print.
+
+# -----------------------------------------------------------------------------
+# BEARINGS  (bore x OD x width, mm)
+# -----------------------------------------------------------------------------
+bearings:
+  gobilda_1611_flanged: { bore: 8.0, bore_type: "REX or round", od: 14.0, width: 5.0 }
+  gobilda_1611_6mm:      { bore: 6.0, od: 14.0, width: 5.0 }
+  gobilda_1600_nonflanged: { bore: 8.0, od: 22.0, width: 7.0, equiv: "608 skate bearing" }
+  rev_49_1559_flanged:   { bore: 8.0, od: 12.0, width: 3.5, note: "REV pairs with 5mm-hex insert; MR128-class" }
+  # common catalog metric bearings frequently used in FTC prints
+  b608:   { bore: 8.0,  od: 22.0, width: 7.0 }
+  b625:   { bore: 5.0,  od: 16.0, width: 5.0 }
+  b626:   { bore: 6.0,  od: 19.0, width: 6.0 }
+  b688:   { bore: 8.0,  od: 16.0, width: 5.0, note: "also exists in 4mm width — specify" }
+  mr105:  { bore: 5.0,  od: 10.0, width: 4.0, confidence: moderate }
+  mr115:  { bore: 5.0,  od: 11.0, width: 4.0 }
+  b6800:  { bore: 10.0, od: 19.0, width: 5.0 }
+  confidence: verified   # goBILDA/REV verified; MR-series widths have minor source conflicts (flagged)
+
+# -----------------------------------------------------------------------------
+# MATERIAL / SHEET THICKNESSES  (mm)
+# -----------------------------------------------------------------------------
+materials:
+  sheet_imperial:            # polycarbonate (Lexan) & aluminum, sold by inch
+    "1/16": 1.588
+    "1/8":  3.175            # most common structural plate gauge
+    "3/16": 4.763            # note: 3/16 polycarb often measures ~4.5 (0.177")
+    "1/4":  6.35
+  sheet_metric: [3.0, 6.0]   # also stocked directly
+  cots:
+    gobilda_plate: 2.5        # confidence: moderate
+    gobilda_1140_baseplate: 6.0
+    rev_maxtube_2x1_wall: 3.175
+  fdm_wall:                   # 0.4 mm nozzle; confidence: moderate (general FDM, not FTC-specific)
+    min_structural: 0.8       # 2 perimeters
+    recommended: [1.2, 1.6]   # 3-4 perimeters for load-bearing FTC parts
+    rule: "walls should be integer multiples of nozzle width (0.4)"
+
+# -----------------------------------------------------------------------------
+# PROJECT CONVENTIONS  (OpenFTC design defaults — not vendor standards)
+# -----------------------------------------------------------------------------
+conventions:
+  fillet_sizes: [1.0, 2.0, 3.0]     # standard fillet set; pick smallest that carries load
+  fdm_hole_clearance: 0.2           # enlarge printed holes ~0.2 over nominal for fit
+  confidence: convention

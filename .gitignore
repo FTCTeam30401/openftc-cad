@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Slicer / CAD scratch
+*.gcode
+*.3mf.bak
+*.tmp
+
+# Editor
+.vscode/
+.idea/
