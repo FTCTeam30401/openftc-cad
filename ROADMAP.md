@@ -25,7 +25,7 @@ Build the standards that every future model uses.
 The heart of the project: custom Onshape features, sourced from [`featurescript/`](featurescript/).
 
 - [x] **OpenFTC Hole Pattern** — vendor-standard grids with mount/native hole sizing, center option, cut-through. *Compiled & cut-tested in Onshape 2026-07-02.*
-- [ ] **OpenFTC Plate** — outline + auto hole pattern + optional goBILDA bearing holes (14 mm @ 24 mm) + corner fillets
+- [x] **OpenFTC Plate** — plate sized by its hole pattern + optional goBILDA bearing holes (14 mm @ 24 mm sub-grid) + corner fillets. *Generated & verified in Onshape 2026-07-02.*
 - [ ] **OpenFTC Gusset** (L / U / T) — print-first ribs, role-aware holes
 - [ ] **OpenFTC Heat-Set Boss** — CNC Kitchen/Ruthex-sized insert bosses
 - [ ] **OpenFTC Bearing Pocket** — 1611 / 608 / REV pocket geometry

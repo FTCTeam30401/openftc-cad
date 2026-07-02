@@ -26,9 +26,23 @@ The live Onshape document: https://cad.onshape.com/documents/c1a27ea89277347b6bb
 
 ## Features
 
-| Feature | File | Status |
-|---------|------|--------|
-| **OpenFTC Hole Pattern** | [`openftc-hole-pattern.fs`](openftc-hole-pattern.fs) | ✅ Working — compiled & cut-tested 2026-07-02 |
+All features live in one file — [`openftc-features.fs`](openftc-features.fs) — which maps 1:1 to the document's Feature Studio.
+
+| Feature | Status |
+|---------|--------|
+| **OpenFTC Hole Pattern** | ✅ Working — compiled & cut-tested 2026-07-02 |
+| **OpenFTC Plate** | ✅ Working — generated a 9×7 goBILDA plate w/ six 14 mm bearing holes + fillets, 2026-07-02 |
+
+### OpenFTC Plate
+
+A printable plate sized by its hole pattern: width = columns × spacing, height =
+rows × spacing, holes centered with a half-pitch edge margin (vendor pattern-plate
+convention). **Parameters:** standard · columns · rows · thickness · hole size ·
+goBILDA bearing holes (14 mm replacing grid holes on a 24 mm sub-grid, outer ring
+excluded so bearings never break the edge) · corner fillet radius.
+
+One dialog → one finished part. This is the first feature a team can print a
+robot part from.
 
 ### OpenFTC Hole Pattern
 
