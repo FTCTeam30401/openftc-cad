@@ -31,7 +31,8 @@ The heart of the project: custom Onshape features, sourced from [`featurescript/
 - [x] **OpenFTC T Gusset** — tee bracket, grids on base (both sides) + center leg. *Generated & verified 2026-07-02.* (ribs planned)
 - [x] **OpenFTC Heat-Set Boss** — insert bosses at sketch points, CNC Kitchen/Ruthex sizing. *Generated & verified 2026-07-02.*
 - [x] **OpenFTC Bearing Pocket** — 1611/REV/608/625 pockets at sketch points w/ fit clearance. *Generated & verified 2026-07-02.*
-- [ ] VEX square-hole option for the Hole Pattern feature
+- [x] VEX square-hole option — true 0.182 in squares across all generators. *Verified 2026-07-02.*
+- [x] **Teardrop leg holes** on L/U/T gussets (print-first, on by default) — researched & adversarially verified geometry ([print-first.md](docs/standards/print-first.md)). *Code 2026-07-03; Onshape paste pending.*
 - [ ] Standoffs / cross members
 
 ## Phase 3 — Universal Adapters *(the differentiator)*

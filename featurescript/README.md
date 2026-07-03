@@ -78,6 +78,16 @@ larger of the two. Holes are always mount-clearance (adapters bolt onto both
 structures). This is the Phase 3 signature: instead of redesigning a robot,
 print the bridge.
 
+### Teardrop leg holes (gusset family)
+
+Gusset leg holes print with horizontal axes (base-down orientation), so their
+top arcs sag. All three gussets default to **truncated-teardrop leg holes**:
+45-degree self-supporting walls, flat bridge at the top of the circle
+(0.828 x radius wide) — the NopSCADlib-standard geometry, researched and
+adversarially verified in [print-first.md](../docs/standards/print-first.md).
+Toggle off in the dialog for machined parts. Square VEX holes are never
+teardropped. Base/plate holes stay circular (vertical axis — no sag).
+
 ### OpenFTC L Gusset
 
 Two perpendicular legs sharing a corner, each carrying the standard's grid.

@@ -76,6 +76,34 @@ function skGridHole(sketch is Sketch, name is string, center is Vector, dia is V
         skCircle(sketch, name, { "center" : center, "radius" : dia / 2 });
 }
 
+// Truncated-teardrop hole for HORIZONTAL-axis printing (leg holes printed
+// base-down): 45-degree self-supporting tangent walls from (+/-0.707r, 0.707r),
+// flat bridge at y = +r spanning +/-0.414r (NopSCADlib-standard geometry --
+// see docs/standards/print-first.md). +Y of the sketch must point print-up.
+function skTeardropHole(sketch is Sketch, name is string, center is Vector, dia is ValueWithUnits)
+{
+    const r = dia / 2;
+    skCircle(sketch, name ~ "_c", { "center" : center, "radius" : r });
+    const tx = r * sqrt(0.5);            // tangent point: 45 deg on the circle
+    const bx = r * tan(22.5 * degree);   // half-width of the flat bridge
+    skPolyline(sketch, name ~ "_t", { "points" : [
+                center + vector(tx, tx),
+                center + vector(bx, r),
+                center + vector(-bx, r),
+                center + vector(-tx, tx),
+                center + vector(tx, tx)
+            ] });
+}
+
+// Leg hole: teardrop when requested and round; plain grid hole otherwise.
+function skLegHole(sketch is Sketch, name is string, center is Vector, dia is ValueWithUnits, square is boolean, teardrop is boolean)
+{
+    if (teardrop && !square)
+        skTeardropHole(sketch, name, center, dia);
+    else
+        skGridHole(sketch, name, center, dia, square);
+}
+
 // =====================================================================
 //  1. OpenFTC Hole Pattern
 // =====================================================================
@@ -418,6 +446,9 @@ export const openFtcLGusset = defineFeature(function(context is Context, id is I
 
         annotation { "Name" : "Hole size" }
         definition.role is OpenFtcHoleRole;
+
+        annotation { "Name" : "Teardrop leg holes (print-first)", "Default" : true }
+        definition.teardrop is boolean;
     }
     {
         const spec = openFtcStandardSpec(definition.standard);
@@ -497,7 +528,7 @@ export const openFtcLGusset = defineFeature(function(context is Context, id is I
         {
             for (var k = 0; k < definition.nyVert; k += 1)
             {
-                skGridHole(vertHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square);
+                skLegHole(vertHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square, definition.teardrop);
             }
         }
         skSolve(vertHoles);
@@ -553,6 +584,9 @@ export const openFtcUGusset = defineFeature(function(context is Context, id is I
 
         annotation { "Name" : "Hole size" }
         definition.role is OpenFtcHoleRole;
+
+        annotation { "Name" : "Teardrop leg holes (print-first)", "Default" : true }
+        definition.teardrop is boolean;
     }
     {
         const spec = openFtcStandardSpec(definition.standard);
@@ -648,7 +682,7 @@ export const openFtcUGusset = defineFeature(function(context is Context, id is I
             {
                 for (var k = 0; k < definition.nyVert; k += 1)
                 {
-                    skGridHole(legHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square);
+                    skLegHole(legHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square, definition.teardrop);
                 }
             }
             skSolve(legHoles);
@@ -706,6 +740,9 @@ export const openFtcTGusset = defineFeature(function(context is Context, id is I
 
         annotation { "Name" : "Hole size" }
         definition.role is OpenFtcHoleRole;
+
+        annotation { "Name" : "Teardrop leg holes (print-first)", "Default" : true }
+        definition.teardrop is boolean;
     }
     {
         const spec = openFtcStandardSpec(definition.standard);
@@ -785,7 +822,7 @@ export const openFtcTGusset = defineFeature(function(context is Context, id is I
         {
             for (var k = 0; k < definition.nyVert; k += 1)
             {
-                skGridHole(legHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square);
+                skLegHole(legHoles, "h_" ~ i ~ "_" ~ k, vector(-W / 2 + s / 2 + i * s, t + s / 2 + k * s), d, square, definition.teardrop);
             }
         }
         skSolve(legHoles);
